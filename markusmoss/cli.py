@@ -24,6 +24,7 @@ def _parse_config(pre_args):
     for key, value in DEFAULTS.items():
         if args_dict.get(key) is None:
             args_dict[key] = value
+    args_dict.pop('config')
     return args_dict
 
 
@@ -40,6 +41,7 @@ def _parse_args():
     parser.add_argument("--language", choices=mosspy.Moss.languages)
     parser.add_argument("--file-glob")
     parser.add_argument("--groups", nargs="*", default=None)
+    parser.add_argument("--generate-config")
     parser.add_argument("-f", "--force", action="store_true")
     parser.add_argument("-v", "--verbose", action="store_true")
 
@@ -48,7 +50,12 @@ def _parse_args():
 
 def cli():
     kwargs = _parse_args()
-    kwargs.pop("config")
+    if kwargs["generate_config"] is not None:
+        with open(kwargs["generate_config"], 'w') as f:
+            kwargs.pop("generate_config")
+            toml.dump(kwargs, f)
+            return
+    kwargs.pop("generate_config", None)
     actions = kwargs.pop("actions")
     MarkusMoss(**kwargs).run(actions=actions)
 
