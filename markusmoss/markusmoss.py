@@ -13,7 +13,7 @@ import requests
 import io
 import bs4
 import re
-from typing import Optional, ClassVar, Tuple, Iterable, Dict, Pattern, Iterator
+from typing import Optional, ClassVar, Iterable, Pattern, Iterator
 
 from bs4 import BeautifulSoup
 
@@ -146,6 +146,13 @@ class _MatchDetails:
 
 
 class _Case:
+    """
+    Represents a MOSS case and its details (i.e. all of the
+    matches involved)
+
+    Public Attributes:
+    - matches: a list of _MatchDetail pairs for this case.
+    """
     matches: list[tuple[_MatchDetails, _MatchDetails]]
     _markus_moss: MarkusMoss
 
@@ -167,7 +174,8 @@ class _Case:
             headers = row.select("th")
             data = row.select("td")
             if headers:
-                current_headers = tuple([headers[i].contents[0] for i in range(0, len(headers), 2)])
+                current_headers = tuple([headers[i].contents[0]
+                                         for i in range(0, len(headers), 2)])
             else:
                 current_pairs = []
                 for i in range(0, len(data), 2):
@@ -249,10 +257,10 @@ class MarkusMoss:
     FINAL_REPORT_DIR: ClassVar[str] = "final_report"
     FINAL_REPORT_CASE_OVERVIEW: ClassVar[str] = "case_overview.csv"
     SELECTED_CASES_DIR: ClassVar[str] = "selected"
-    OVERVIEW_INFO: ClassVar[Tuple[str]] = ("case", "groups", "similarity (%)", "matched_lines")
-    USER_INFO: ClassVar[Tuple[str]] = ("group_name", "user_name", "first_name", "last_name", "email", "id_number")
+    OVERVIEW_INFO: ClassVar[tuple[str]] = ("case", "groups", "similarity (%)", "matched_lines")
+    USER_INFO: ClassVar[tuple[str]] = ("group_name", "user_name", "first_name", "last_name", "email", "id_number")
     PRINT_PREFIX: ClassVar[str] = "[MARKUSMOSS]"
-    ACTIONS: ClassVar[Tuple[str]] = (
+    ACTIONS: ClassVar[tuple[str, ...]] = (
         "download_submission_files",
         "download_starter_files",
         "copy_files_to_pdf",
@@ -292,6 +300,14 @@ class MarkusMoss:
             selected_groups = [selected_groups]
 
         self.selected_groups = selected_groups if selected_groups else []
+
+        if self.groups is None and self.selected_groups:
+            # Set self.groups to the groups in self.selected_groups
+            # (If match numbers are provided, then this step is ignored.)
+            flattened_groups = sum([group_set for group_set in
+                                    selected_groups if isinstance(group_set, list)], [])
+            self.groups = flattened_groups if flattened_groups else None
+
         self.exclude_matches = exclude_matches if exclude_matches else {}
         self.__group_data = None
         self.__membership_data = None
@@ -416,17 +432,24 @@ class MarkusMoss:
             os.makedirs(assignment_report_dir, exist_ok=True)
             if os.path.isdir(self.starter_files_dir):
                 self._copy_starter_files(assignment_report_dir)
+
+            # Write the case overview
             with open(os.path.join(assignment_report_dir, self.FINAL_REPORT_CASE_OVERVIEW), "w") as overview_f:
                 overview_writer = csv.writer(overview_f)
                 overview_writer.writerow(self.OVERVIEW_INFO)
                 report_iter = self._parse_html_report()
+
+                # Go through each match in the html report
                 for i, (match_file, group1, group2, similarity, matched_lines) in enumerate(report_iter):
                     self._print(f"Creating report for groups {group1} and {group2} with {similarity}% similarity.")
                     case = f"case_{i + 1}"
                     case_dir = os.path.join(assignment_report_dir, case)
                     os.makedirs(case_dir, exist_ok=True)
+
+                    # Copy the moss report into the match directory
                     self._copy_moss_report(match_file, os.path.join(case_dir, f"moss.html"))
                     groups = [group1, group2]
+                    # Copy the submission files
                     for group in groups:
                         self._copy_submission_files(group, case_dir)
                     self._write_case_report(groups, case_dir)
@@ -535,7 +558,7 @@ class MarkusMoss:
         return self.__moss
 
     @property
-    def _group_data(self) -> Dict:
+    def _group_data(self) -> dict:
         if self.__group_data is None:
             group_data = self.api.get_groups(self._markus_course_id, self._assignment_id)
             if self.groups is not None:
@@ -544,7 +567,7 @@ class MarkusMoss:
         return self.__group_data
 
     @property
-    def _membership_data(self) -> Dict:
+    def _membership_data(self) -> dict:
         if self.__membership_data is None:
             self.__membership_data = self._get_group_membership_info()
         return self.__membership_data
@@ -562,7 +585,7 @@ class MarkusMoss:
         return self.__markus_course_id
 
     @property
-    def _starter_file_groups(self) -> Dict:
+    def _starter_file_groups(self) -> dict:
         if self.__starter_file_groups is None:
             self.__starter_file_groups = self.api.get_starter_file_groups(self._markus_course_id, self._assignment_id)
         return self.__starter_file_groups
@@ -608,7 +631,8 @@ class MarkusMoss:
         msg = f"No MarkUs course found with name: {self.markus_course}\noptions:{short_ids}"
         raise Exception(msg)
 
-    def _get_group_membership_info(self) -> Dict:
+    def _get_group_membership_info(self) -> dict:
+        """Return a dictionary mapping group names to member names"""
         user_info = {u["id"]: {k: u.get(k) for k in self.USER_INFO} for u in
                      self.api.get_all_roles(self._markus_course_id)}
         members = collections.defaultdict(list)
@@ -640,17 +664,19 @@ class MarkusMoss:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
+
             with open(source_file, "r") as f:
                 filename = os.path.split(source_file)[-1]
                 try:
                     content = b"# %b\n\n```{.%b .numberLines}\n%b\n```" % (
                         filename.encode(errors="replace"), self.language.encode(),
-                        f.read().encode()
+                        f.read().encode(errors="replace")
                     )
                 except:
                     sys.stderr.write(f"[ERROR] Could not copy {source_file} to PDF\n")
                     sys.stderr.flush()
                     return False
+
             _out, err = proc.communicate(content)
             if proc.returncode != 0:
                 sys.stderr.write(f"[PANDOC ERROR]{err}\n")
@@ -658,7 +684,15 @@ class MarkusMoss:
             return True
         return False
 
-    def _parse_html_report(self) -> Iterator[Tuple[str, str, str, int, int]]:
+    def _parse_html_report(self) -> Iterator[tuple[str, str, str, int, int]]:
+        """Return an iterator that will produce a tuple with:
+
+        - the path to the match file
+        - the name of the first group in the match
+        - the name of the second group in the match
+        - the similarity % as an integer
+        - the number of lines matched
+        """
         with open(os.path.join(self.moss_report_download_dir, "index.html")) as f:
             parsed_html = bs4.BeautifulSoup(f, features='html5lib')
             for row in parsed_html.body.find("table").find_all("tr"):
@@ -814,6 +848,7 @@ class MarkusMoss:
         """Return the rows corresponding to the code block pairs code1 and code2.
 
         Rows are limited to CODE_BLOCK_LIMIT lines each.
+        CODE_BLOCK_LIMIT is used in order to group blocks and split them across pages.
         """
         code1_rows = code1.split("\n")
         code2_rows = code2.split("\n")

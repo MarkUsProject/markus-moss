@@ -5,7 +5,7 @@ with open("README.md") as fh:
 
 setuptools.setup(
     name="markusmoss",
-    version="0.0.1",
+    version="0.0.2",
     author="Misha Schwartz",
     author_email="mschwa@cs.toronto.edu",
     description="run moss plagiarism detector on MarkUs submissions",
@@ -16,7 +16,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     install_requires=["mosspy==1.0.8", "toml==0.10.2",
                       "html5lib==1.1", "pypdf",
-                      "markusapi @ git+https://github.com/MarkUsProject/markus-api.git",
+                      "markusapi>=0.5.0",
                       "requests>=2.32.4",
                       "urllib3>=2.5.0",
                       "toc_pdf_merge @ git+https://github.com/sophia-huynh/toc-pdf-merge.git",
