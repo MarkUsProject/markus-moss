@@ -763,12 +763,16 @@ class MarkusMoss:
         with open(case_overview_path) as f:
             reader = csv.reader(f)
             for row in reader:
-                case, groups = row[:2]
-                groups = set(groups.split(';'))
-                group_pair = MarkusMoss._get_group_pair(groups, group_pairs)
-                if group_pair or case in matches:
-                    cases_to_groups[case] = group_pair if group_pair else groups
-                    matches.add(case)
+                try:
+                    case, groups = row[:2]
+                    groups = set(groups.split(';'))
+                    group_pair = MarkusMoss._get_group_pair(groups, group_pairs)
+                    if group_pair or case in matches:
+                        cases_to_groups[case] = group_pair if group_pair else groups
+                        matches.add(case)
+                except:
+                    sys.stderr.write(f"[ERROR] Failed to parse row in case overview:\n{row}\n")
+                    sys.stderr.flush()
 
         return cases_to_groups
 
