@@ -771,8 +771,10 @@ class MarkusMoss:
                         cases_to_groups[case] = group_pair if group_pair else groups
                         matches.add(case)
                 except:
-                    sys.stderr.write(f"[ERROR] Failed to parse row in case overview:\n{row}\n")
-                    sys.stderr.flush()
+                    if row:
+                        sys.stderr.write(f"[ERROR] Failed to parse row in case overview:\n{row}\n")
+                        sys.stderr.flush()
+                    # If the row is empty, just skip it and omit the error
 
         return cases_to_groups
 
