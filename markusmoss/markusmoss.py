@@ -257,8 +257,8 @@ class MarkusMoss:
     FINAL_REPORT_DIR: ClassVar[str] = "final_report"
     FINAL_REPORT_CASE_OVERVIEW: ClassVar[str] = "case_overview.csv"
     SELECTED_CASES_DIR: ClassVar[str] = "selected"
-    OVERVIEW_INFO: ClassVar[tuple[str]] = ("case", "groups", "similarity (%)", "matched_lines")
-    USER_INFO: ClassVar[tuple[str]] = ("group_name", "user_name", "first_name", "last_name", "email", "id_number")
+    OVERVIEW_INFO: ClassVar[tuple[str, ...]] = ("case", "groups", "similarity (%)", "matched_lines")
+    USER_INFO: ClassVar[tuple[str, ...]] = ("group_name", "user_name", "first_name", "last_name", "email", "id_number")
     PRINT_PREFIX: ClassVar[str] = "[MARKUSMOSS]"
     ACTIONS: ClassVar[tuple[str, ...]] = (
         "download_submission_files",
@@ -304,9 +304,9 @@ class MarkusMoss:
         if self.groups is None and self.selected_groups:
             # Set self.groups to the groups in self.selected_groups
             # (If match numbers are provided, then this step is ignored.)
-            flattened_groups = sum([group_set for group_set in
-                                    selected_groups if isinstance(group_set, list)], [])
-            self.groups = flattened_groups if flattened_groups else None
+            flattened_groups = sum((group_set for group_set in
+                                    selected_groups if isinstance(group_set, list)), [])
+            self.groups = flattened_groups or None
 
         self.exclude_matches = exclude_matches if exclude_matches else {}
         self.__group_data = None
@@ -391,7 +391,7 @@ class MarkusMoss:
         self.__moss_report_url = self.moss.send()
         self._print(f"Saving MOSS results from: {self.moss_report_url}")
         os.makedirs(self.moss_report_dir, exist_ok=True)
-        with open(self.moss_report_url_file, "w") as f:
+        with open(self.moss_report_url_file, "w", encoding='utf-8') as f:
             f.write(self.moss_report_url)
 
     @staticmethod
@@ -407,12 +407,12 @@ class MarkusMoss:
 
     def _moss_download(self, url, dest_dir):
         parsed_html = self._parse_url(url)
-        with open(os.path.join(dest_dir, 'index.html'), 'w') as f:
+        with open(os.path.join(dest_dir, 'index.html'), 'w', encoding='utf-8') as f:
             f.write(self._localize_page_contents(parsed_html))
         urls = {u for u in (a.attrs.get('href') for a in parsed_html.find_all('a')) if u.startswith(url)}
         for url_ in urls:
             parsed_html = self._parse_url(url_)
-            with open(os.path.join(dest_dir, os.path.basename(url_)), 'w') as f:
+            with open(os.path.join(dest_dir, os.path.basename(url_)), 'w', encoding='utf-8') as f:
                 f.write(self._localize_page_contents(parsed_html))
             for src_url in [f.attrs['src'] for f in parsed_html.find_all('frame')]:
                 with open(os.path.join(dest_dir, os.path.basename(src_url)), 'w', encoding='utf-8') as f:
@@ -434,7 +434,8 @@ class MarkusMoss:
                 self._copy_starter_files(assignment_report_dir)
 
             # Write the case overview
-            with open(os.path.join(assignment_report_dir, self.FINAL_REPORT_CASE_OVERVIEW), "w") as overview_f:
+            with (open(os.path.join(assignment_report_dir, self.FINAL_REPORT_CASE_OVERVIEW), "w", encoding='utf-8')
+                  as overview_f):
                 overview_writer = csv.writer(overview_f)
                 overview_writer.writerow(self.OVERVIEW_INFO)
                 report_iter = self._parse_html_report()
@@ -485,7 +486,7 @@ class MarkusMoss:
             url = None
             if os.path.isfile(self.moss_report_url_file):
                 self._print(f"Attempting to read moss report url from {self.moss_report_url_file}")
-                with open(self.moss_report_url_file) as f:
+                with open(self.moss_report_url_file, encoding='utf-8') as f:
                     url = f.read().strip()
             if url:
                 self.__moss_report_url = url
@@ -665,7 +666,7 @@ class MarkusMoss:
                 stderr=subprocess.PIPE,
             )
 
-            with open(source_file, "r") as f:
+            with open(source_file, "r", encoding='utf-8') as f:
                 filename = os.path.split(source_file)[-1]
                 try:
                     content = b"# %b\n\n```{.%b .numberLines}\n%b\n```" % (
@@ -693,7 +694,7 @@ class MarkusMoss:
         - the similarity % as an integer
         - the number of lines matched
         """
-        with open(os.path.join(self.moss_report_download_dir, "index.html")) as f:
+        with open(os.path.join(self.moss_report_download_dir, "index.html"), encoding='utf-8') as f:
             parsed_html = bs4.BeautifulSoup(f, features='html5lib')
             for row in parsed_html.body.find("table").find_all("tr"):
                 if row.find("th"):
@@ -726,7 +727,7 @@ class MarkusMoss:
         for group in groups:
             group_membership_file = os.path.join(destination, group, self.GROUP_MEMBERSHIP_FILE)
             os.makedirs(os.path.join(destination, group), exist_ok=True)
-            with open(group_membership_file, "w") as f:
+            with open(group_membership_file, "w", encoding='utf-8') as f:
                 writer = csv.DictWriter(f, fieldnames=self.USER_INFO)
                 writer.writeheader()
                 for data in self._membership_data[group]:
@@ -760,7 +761,7 @@ class MarkusMoss:
         cases_to_groups = {}
 
         # Populate a dictionary mapping the relevant cases to the group(s)
-        with open(case_overview_path) as f:
+        with open(case_overview_path, encoding='utf-8') as f:
             reader = csv.reader(f)
             for row in reader:
                 try:
@@ -794,13 +795,13 @@ class MarkusMoss:
         base, _ = os.path.splitext(base_html_file)
         base_basename = os.path.basename(base)
         top = f"{base}-top.html"
-        with open(os.path.join(os.path.dirname(__file__), 'templates', 'report_template.html')) as f:
+        with open(os.path.join(os.path.dirname(__file__), 'templates', 'report_template.html'), encoding='utf-8') as f:
             template = bs4.BeautifulSoup(f, features='html5lib')
-        with open(base_html_file) as f:
+        with open(base_html_file, encoding='utf-8') as f:
             base_html = bs4.BeautifulSoup(f, features='html5lib')
             title = base_html.head.find("title").text
             template.head.find('title').string = title
-        with open(top) as f:
+        with open(top, encoding='utf-8') as f:
             top_html = bs4.BeautifulSoup(f, features='html5lib')
             table = top_html.body.find("center")
             for a in table.find_all('a'):
@@ -812,7 +813,7 @@ class MarkusMoss:
             top_div.append(table)
         for match_i in range(2):
             match_file = f"{base}-{match_i}.html"
-            with open(match_file) as f:
+            with open(match_file, encoding='utf-8') as f:
                 match_html = bs4.BeautifulSoup(f, features='html5lib')
                 match_body = match_html.body
                 for a in match_body.find_all('a'):
@@ -826,7 +827,7 @@ class MarkusMoss:
             file_title = template.new_tag('h3')
             match_div.append(file_title)
             match_div.append(match_body)
-        with open(destination, 'w') as f:
+        with open(destination, 'w', encoding='utf-8') as f:
             f.write(str(template))
 
     @property
@@ -1211,7 +1212,7 @@ class MarkusMoss:
                 else:
                     os.makedirs(dest, exist_ok=True)
                     try:
-                        with open(filename, "wb") as f:
+                        with open(filename, "wb", encoding='utf-8') as f:
                             f.write(zf.read(fname))
                     except Exception as e:
                         sys.stderr.write(f"[UNZIP ERROR] Could not write {filename}:\n{e}\n")
