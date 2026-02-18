@@ -38,6 +38,7 @@ Arguments can be specified on the command line or in a config file (see below).
 * --workdir : (string) working directory : default is `${PWD}`
 * --actions : (strings) actions (see below) : default is to run all actions in order 
 * --groups : (strings) only use the groups listed : default is to use all groups from the specified MarkUs assignment
+                      If --groups is not provided but --selected-groups is, then only the selected groups will be used. 
 * --language : (strings) moss programming languages (see below)
 * --file-glob : (string) glob describing submission files to test with moss (see below): default is '\*\*/\*'
 * --generate-config: (string) write a config file (see format below) to the path specified from all other arguments given.
@@ -86,6 +87,8 @@ selected_groups = [["group 1", "group 2"],
 
 When more than 2 groups are provided in a single set, all cases involving any pair of groups
 will be reported.
+
+If `--groups` is not provided, then the groups in `--selected_groups` will be used rather than all groups.
 
 ##### Excluding matches
 Specific matches within cases may also be provided through the `exclude_matches` argument in the `toml`
