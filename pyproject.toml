@@ -1,0 +1,55 @@
+[project]
+name = "markus-moss"
+version = "0.0.2"
+authors = [
+  { name="Sophia Huynh" },
+  { name="Sam Maldonado" },
+  { name="Misha Schwartz" },
+]
+maintainers = [
+  { name="David Liu", email="david@cs.toronto.edu" },
+]
+description = "Run MOSS plagiarism detector on MarkUs submissions"
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
+dependencies = [
+    "mosspy==1.0.8",
+    "toml==0.10.2",
+    "html5lib==1.1",
+    "pypdf",
+    "markusapi>=0.5.0",
+    "requests>=2.32.4",
+    "urllib3>=2.5.0",
+    "toc_pdf_merge @ git+https://github.com/sophia-huynh/toc-pdf-merge.git",
+]
+
+[project.scripts]
+markus-moss = "markus_moss.cli:cli"
+
+[project.urls]
+Homepage = "https://github.com/MarkUsProject/markus-moss"
+Issues = "https://github.com/MarkUsProject/markus-moss/issues"
+
+[build-system]
+requires = ["uv_build >= 0.9.17, <0.10.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = ["pytest"]
+
+[tool.uv.workspace]
+members = [
+    "markusapi",
+]
+
+[tool.uv.build-backend]
+data = [
+    "src/markus_moss/templates"
+]
