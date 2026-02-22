@@ -1,57 +1,57 @@
-## MarkUs Moss
+# markus-moss
 
 Tool to generate [Moss](http://moss.stanford.edu/) reports from [MarkUs](https://github.com/MarkUsProject/Markus) submissions.
 
-### Installation
+## Installation
 
 ```shell script
-pip install git+https://github.com/MarkUsProject/markus-moss.git
+pip install markus-moss
 ```
 
 Optional External Dependencies:
 
 - [pandoc](https://pandoc.org/) (required for `copy_files_to_pdf` action)
 
-### Usage
+## Usage
 
 ```shell script
-markusmoss {arguments}
+markus-moss {arguments}
 ```
 
-Running `markusmoss` is guaranteed to be idempotent as long as the `--force` option is not used.
+Running `markus-moss` is guaranteed to be idempotent as long as the `--force` option is not used.
 
-#### arguments:
+### Arguments
 
-MarkUs moss takes several optional command line arguments. Depending on the action selected, different arguments
-are required. If a required argument is not specified, markusmoss.py will raise an error during runtime. 
+`markus-moss` takes several optional command-line arguments. Depending on the action selected, different arguments
+are required. If a required argument is not specified, `markus-moss` will raise an error during runtime.
 
 Arguments can be specified on the command line or in a config file (see below).
 
-* --help : show help message and exit
-* --markus-api-key : (string) markus api key
-* --markus-url : (string) markus url
-* --markus-course : (string) markus course short identifier
-* --markus-assignment : (string) markus assignment short identifier
-* --moss-userid : (integer) moss userid
-* --moss-report-url : (string) moss report url
-* --config : (string) config file (see format below) : default is `${PWD}/.markusmossrc`
-* --workdir : (string) working directory : default is `${PWD}`
-* --actions : (strings) actions (see below) : default is to run all actions in order 
-* --groups : (strings) only use the groups listed : default is to use all groups from the specified MarkUs assignment
-                      If --groups is not provided but --selected-groups is, then only the selected groups will be used. 
-* --language : (strings) moss programming languages (see below)
-* --file-glob : (string) glob describing submission files to test with moss (see below): default is '\*\*/\*'
-* --generate-config: (string) write a config file (see format below) to the path specified from all other arguments given.
-                              If no path is given to this flag, write to stdout. 
-* --html-parser : (string) bs4 html parser: default is 'html.parser'
-* --force : redo all specified actions: default is not to redo previously executed actions
-* --verbose : log actions to stdout
-* --selected-groups : (int) a single case number or (string) 2 or more group names to generate individual reports for.
+* `--help`: show help message and exit
+* `--markus-api-key`: (string) MarkUs API key
+* `--markus-url`: (string) MarkUs URL
+* `--markus-course`: (string) MarkUs course short identifier
+* `--markus-assignment`: (string) MarkUs assignment short identifier
+* `--moss-userid`: (integer) MOSS userid
+* `--moss-report-url`: (string) MOSS report URL
+* `--config`: (string, default `${PWD}/.markusmossrc`) config file (see format below); default is
+* `--workdir`: (string, default `${PWD}`) working directory
+* `--actions`: (comma-separated list of strings) actions (see below). Default is to run all actions in order
+* `--groups`: (comma-separated list of strings) only use the groups listed.
+              If `--groups` is not provided but `--selected-groups` is, then only the selected groups will be used.
+* `--language`: (comma-separated list of strings) MOSS programming languages (see below)
+* `--file-glob`: (string) glob describing submission files to test with MOSS (see below): default is `\*\*/\*`
+* `--generate-config`: (string) write a config file (see format below) to the path specified from all other arguments given.
+                              If no path is given to this flag, write to stdout.
+* `--html-parser`: (string) bs4 html parser: default is `html.parser`
+* `--force`: Redo all specified actions. Default is not to redo previously executed actions.
+* `--verbose`: log actions to stdout
+* `--selected-groups`: (integer) a single case number or (string) two or more group names to generate individual reports for.
 
-#### config format
+### Config format
 
-Instead of passing arguments to the command line, most arguments can be specified in a 
-[toml](https://github.com/toml-lang/toml) configuration file. All command line arguments can also be specified in the 
+Instead of passing arguments to the command line, most arguments can be specified in a
+[toml](https://github.com/toml-lang/toml) configuration file. All command line arguments can also be specified in the
 config file except:
 
 * config
@@ -74,7 +74,7 @@ Information about obtaining the `markus_api_key` and `markus_url` can be found h
 
 Information about obtaining the `moss_userid` can be found here: http://moss.stanford.edu/
 
-##### Selecting cases
+### Selecting cases
 When using the `--selected-groups` argument, the `selected` directory will be generated to produce a folder
 with the specified case (in the case of a case number being provided), or all cases involving the
 groups (in the case of a list of group names being provided).
@@ -90,9 +90,9 @@ will be reported.
 
 If `--groups` is not provided, then the groups in `--selected_groups` will be used rather than all groups.
 
-##### Excluding matches
+### Excluding matches
 Specific matches within cases may also be provided through the `exclude_matches` argument in the `toml`
-config file to exclude them from selected results (see above). 
+config file to exclude them from selected results (see above).
 
 This should map the case number to the match numbers to exclude. For example:
 
@@ -101,7 +101,7 @@ exclude_matches = { 1 = [0, 8] }
 ```
 This would exclude matches 0 and 8 from being reported for reports containing case 1.
 
-#### actions
+### Actions
 
 * download_submission_files
     * Download submission files from MarkUs and write them to the `submission_files` subdirectory
@@ -156,13 +156,13 @@ This would exclude matches 0 and 8 from being reported for reports containing ca
 
 All subirectories are assumed to be in the specified `workdir`.
 
-#### moss languages
+### moss languages
 
-For a full list of programming languages that can be parsed by moss:
+For a full list of programming languages that can be parsed by MOSS:
 
 http://moss.stanford.edu/
 
-#### file-glob explanation
+### file-glob explanation
 
 MarkUs submissions often contain multiple file types but moss can only evaluate similarity for one language at a time.
 In order to specify which files should be sent to moss for evaluation, the file-glob argument can be used.
@@ -173,7 +173,7 @@ For example, to run moss on python files in any subdirectory from a MarkUs submi
 markusmoss --config my_config.toml --language python --file-glob '**/*.py'
 ```
 
-### Output Files
+## Output Files
 
 After running all actions in order, the contents of the `workdir` should look like:
 
@@ -216,16 +216,16 @@ workdir/
 The all directories except for those contained in `final_report` are not required for the final report and can be
 deleted safely once all actions have been run.
 
-#### final report format
+### Final Report Format
 
-The final report contains a subdirectory for the MarkUs assignment. 
+The final report contains a subdirectory for the MarkUs assignment.
 Within that directory is a case overview file with the details of each case reported by moss.
 There is a subdirectory for each case which contains the submission files for each group in both text and pdf formats.
 Each case also contains one group_data.csv file per group which contains information about each group.
-Each case also contains a moss.html file which contains the moss report for the specific case in question. 
+Each case also contains a moss.html file which contains the moss report for the specific case in question.
 This report can be viewed by opening the moss.html file in any web browser.
 
-##### group_data.csv format
+### group_data.csv Format
 
 This csv file contains information about the group members, it contains the following columns:
 
@@ -236,12 +236,11 @@ This csv file contains information about the group members, it contains the foll
 - email : the student's email address (if available)
 - id_number : the sutdent's id number (if available)
 
-##### case_overview.csv format
+### case_overview.csv format
 
 This csv file contains information about the cases reported by moss, it contains the following columns:
 
 - case : the case name
 - groups : the group names of all groups compared for the given case (separated by `;`)
 - similarity (%) : the percentage similarity score reported by moss
-- matched_lines : the number of identical lines of code reported by moss 
-
+- matched_lines : the number of identical lines of code reported by moss

@@ -31,10 +31,10 @@ def install_venv(workdir):
     python = os.path.join(workdir, 'venv', 'bin', 'python3')
     if not os.path.isfile(python):
         subprocess.run(['python3', '-m', 'venv', f'{workdir}/venv'], check=True)
-    if not os.path.isfile(os.path.join(workdir, 'venv', 'bin', 'markusmoss')):
+    if not os.path.isfile(os.path.join(workdir, 'venv', 'bin', 'markus-moss')):
         pip = os.path.join(workdir, 'venv', 'bin', 'pip')
-        subprocess.run([pip, 'install', 'wheel', 'git+https://github.com/MarkUsProject/markus-moss.git'], check=True)
-    return os.path.join(workdir, 'venv', 'bin', 'markusmoss')
+        subprocess.run([pip, 'install', 'wheel', 'markus-moss'], check=True)
+    return os.path.join(workdir, 'venv', 'bin', 'markus-moss')
 
 
 def _update_conf_simple(conf, key, description, check=lambda x: x, failure=None):
