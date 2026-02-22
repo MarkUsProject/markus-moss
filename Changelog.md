@@ -1,5 +1,6 @@
 ## [unreleased]
 
+## [0.1.1]
 - Moved `git+https://github.com/sophia-huynh/toc-pdf-merge.git` from `pyproject.toml` and add instruction to install manually
 
 ## [0.1.0]
