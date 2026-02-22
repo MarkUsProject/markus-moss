@@ -27,5 +27,8 @@ jobs:
       - name: Sync dependencies
         run: uv sync --locked --all-extras --dev
 
+      - name: Install additional dependencies
+        run: uv pip install git+https://github.com/sophia-huynh/toc-pdf-merge.git
+
       - name: Run tests
         run: uv run pytest

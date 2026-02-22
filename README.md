@@ -5,6 +5,7 @@ Tool to generate [Moss](http://moss.stanford.edu/) reports from [MarkUs](https:/
 ## Installation
 
 ```shell script
+pip install git+https://github.com/sophia-huynh/toc-pdf-merge.git
 pip install markus-moss
 ```
 

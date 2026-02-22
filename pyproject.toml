@@ -27,7 +27,6 @@ dependencies = [
     "markusapi>=0.5.0",
     "requests>=2.32.4",
     "urllib3>=2.5.0",
-    "toc_pdf_merge @ git+https://github.com/sophia-huynh/toc-pdf-merge.git",
 ]
 
 [project.scripts]
