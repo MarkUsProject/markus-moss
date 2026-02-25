@@ -1,5 +1,6 @@
 ## [unreleased]
 
+## [0.1.2]
 - Updated package dependencies to include `toc-pdf-merge` (as it is now on PyPI)
 
 ## [0.1.1]
