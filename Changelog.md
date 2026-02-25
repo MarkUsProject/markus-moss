@@ -1,5 +1,7 @@
 ## [unreleased]
 
+- Updated package dependencies to include `toc-pdf-merge` (as it is now on PyPI)
+
 ## [0.1.1]
 - Moved `git+https://github.com/sophia-huynh/toc-pdf-merge.git` from `pyproject.toml` and add instruction to install manually
 
